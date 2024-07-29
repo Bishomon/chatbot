@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ca6563e4-e3b7-4d9f-b183-a9b334fa6e9e" name="Changes" comment="v 1.0.2&#10;Refactoring&#10;add bot_structure.xmind">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="ca6563e4-e3b7-4d9f-b183-a9b334fa6e9e" name="Changes" comment="v 1.0.4&#10;update del msg">
+      <change beforePath="$PROJECT_DIR$/Keyboards.py" beforeDir="false" afterPath="$PROJECT_DIR$/Keyboards.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chatbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -49,6 +49,7 @@
     "Python.Bot1.executor": "Run",
     "Python.Bot2.executor": "Run",
     "Python.Chat_bot.executor": "Run",
+    "Python.Keyboards.executor": "Run",
     "Python.chatbot.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
@@ -112,7 +113,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722242132715</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="v 1.0.4&#10;update del msg">
+      <option name="closed" value="true" />
+      <created>1722246509828</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1722246509828</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -120,6 +129,7 @@
     <MESSAGE value="v 1.0.1&#10;add Texts" />
     <MESSAGE value="v 1.0.1&#10;add bot_st&#10;add bot_structure.xmind" />
     <MESSAGE value="v 1.0.2&#10;Refactoring&#10;add bot_structure.xmind" />
-    <option name="LAST_COMMIT_MESSAGE" value="v 1.0.2&#10;Refactoring&#10;add bot_structure.xmind" />
+    <MESSAGE value="v 1.0.4&#10;update del msg" />
+    <option name="LAST_COMMIT_MESSAGE" value="v 1.0.4&#10;update del msg" />
   </component>
 </project>

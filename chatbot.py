@@ -44,10 +44,11 @@ async def start(update: Update, context: CallbackContext) -> None:
             reply_markup=Keyboards.main_menu(), parse_mode='HTML'
 
         )
+        await add_msg(msg, update)
     else:
         await del_msg(update.effective_chat.id,context)
     # Сохраняем идентификатор отправленного сообщения в пользовательских данных
-    await add_msg(msg, update)
+
 
 async def menu_option_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query

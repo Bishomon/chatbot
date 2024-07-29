@@ -1,5 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup, \
     CallbackQuery
+import Texts
 
 def main_menu():
     keyboard = [
