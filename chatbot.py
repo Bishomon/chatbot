@@ -17,11 +17,10 @@ async def del_msg(effective_chat_id,context: CallbackContext)-> None:
             try:
                 # Проверка существования сообщения
                 await context.bot.delete_message(chat_id=effective_chat_id, message_id=message_id)
-                print(effective_chat_id,message_id)
             except Exception as e:
                 logging.error(f"Error deleting message {message_id} in chat {effective_chat_id}: {e}")
         # Очистка списка после удаления сообщений
-        msg_dict[effective_chat_id] = []
+    msg_dict[effective_chat_id] = []
 
 async def add_msg(msg, update: Update) -> None:
    # context.user_data['start_message_id'] = msg.message_id
