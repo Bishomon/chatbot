@@ -6,510 +6,356 @@ from telegram.ext import Application, CommandHandler, CallbackContext, MessageHa
 from telegram.error import BadRequest
 import pandas as pd
 import Texts
+import Keyboards
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+def add_message_to_dict(chat_id, message_id):
+    if chat_id not in msg_dict:
+        msg_dict[chat_id] = []
+    msg_dict[chat_id].append(message_id)
+msg_dict = {}
+def add_msg(context, msg, update)-> None:
+   # context.user_data['start_message_id'] = msg.message_id
+    #context.user_data['start_message_text'] = msg.text
+    #context.user_data['message_ids'].append(msg.message_id)
+   # context.user_data['chat_id'] = update.effective_chat.id
+    #context.bot.deleteMessage(message_id=msg.message_id)
+   # context.bot.delete_message(message_id=msg.message_id, chat_id=update.effective_chat.id)
+    if update.effective_chat.id not in msg_dict:
+        msg_dict[update.effective_chat.id] = []
+    msg_dict[update.effective_chat.id].append(msg.id)
 
 
 
 async def start(update: Update, context: CallbackContext) -> None:
     sent_message = await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=Texts.text1,
-        reply_markup=main_menu(), parse_mode='HTML'
+        text=Texts.text_start,
+        reply_markup=Keyboards.main_menu(), parse_mode='HTML'
 
     )
-
     # Сохраняем идентификатор отправленного сообщения в пользовательских данных
     context.user_data['start_message_id'] = sent_message.message_id
 
-
-def main_menu():
-    keyboard = [
-        [InlineKeyboardButton("🌐 Больше информации о лоте", callback_data='1')],
-        [InlineKeyboardButton("📝 Помощь с выкупом", callback_data='2')],
-        [InlineKeyboardButton("📌 Подбор объекта", callback_data='3')],
-        [InlineKeyboardButton("🔐 Закрытый каталог объектов", callback_data='4')],
-        [InlineKeyboardButton("📑 Другие услуги", callback_data='5')],
-       # [InlineKeyboardButton("Закрытый каталог объектов", callback_data='6')],
-        #[InlineKeyboardButton("Частые вопросы", callback_data='7')],
-        [InlineKeyboardButton("📞 Связь с менеджером", callback_data='8')],
-        [InlineKeyboardButton("🏆 О нас", callback_data='9')],
-
-    ]
-
-    return InlineKeyboardMarkup(keyboard)
-
-
 async def menu_option_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
-    await query.answer()
-    try:
-        await context.bot.delete_message(chat_id=update.effective_chat.id,
-                                         message_id=context.user_data.get('start_message_id'))
-    except BadRequest:
-        print("Start message not found or unable to delete.")
+
+    if update.effective_chat.id in msg_dict:
+        for message_id in msg_dict[update.effective_chat.id]:
+            try:
+                # Проверка существования сообщения
+                await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=message_id)
+            except Exception as e:
+                logging.error(f"Error deleting message {message_id} in chat {update.effective_chat.id}: {e}")
+        # Очистка списка после удаления сообщений
+        msg_dict[update.effective_chat.id] = []
 
     # Обрабатываем выбор пользователя в зависимости от кнопки
     if query.data == '1':
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
             parse_mode = 'HTML',
-            text=Texts.text2,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🏅 Хочу всегда видеть полную информацию без ожидания.", callback_data='1.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-
-            ])
+            text=Texts.text_1,
+            reply_markup=Keyboards.keyboard_1()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
+
     elif query.data == '1.1':
         text2 = Texts.text3
 
         # Здесь вы можете добавить код для обработки кнопки "Назад"
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=text2,
+            text=Texts.text_1_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🎯 Оформить подписку", callback_data='1.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='1')]]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_1_1()  # Возвращаем основное меню
+            )
+        add_msg(context, msg, update)
+
     elif query.data == '1.2':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
             parse_mode='HTML',
-            text=Texts.text4,
-            reply_markup=InlineKeyboardMarkup([
-
-                [InlineKeyboardButton("Назад", callback_data='1.1')]]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            text=Texts.text_1_2,
+            reply_markup=Keyboards.keyboard_1_2())
+        add_msg(context, msg, update)
 
         # Обработка других кнопок
 
     if query.data == '2':
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Выберите интересующую помощь",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🚦 Этапы работы", callback_data='2.1')],
-                [InlineKeyboardButton("🧮 Тарифы", callback_data='2.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-            ])
+            text=Texts.text_2,
+            reply_markup=Keyboards.keyboard_2()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
     elif query.data == '2.1':
-        text3 = Texts.text5
+
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=text3,
+            text=Texts.text_2_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔜 Этап 2", callback_data='2.1.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_2_1())
+        add_msg(context, msg, update)
+
     elif query.data == '2.1.1':
-        text4 = Texts.text6
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=text4,
+            text=Texts.text_2_1_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔜 Этап 3", callback_data='2.1.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='2.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]]
+            reply_markup=Keyboards.keyboard_2_1_1()
+
                 # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            )
+        add_msg(context, msg, update)
     elif query.data == '2.1.2':
-        text5 = Texts.text7
+
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=text5,
+            text=Texts.text_2_1_2,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔜 Этап 4", callback_data='2.1.3')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='2.1.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]]
-                # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_2_1_2())
+        add_msg(context, msg, update)
+
     elif query.data == '2.1.3':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text8,
+            text=Texts.text_2_1_3,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Назад", callback_data='2.1.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]]
+            reply_markup=Keyboards.keyboard_2_1_3()
                 # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            )
+        add_msg(context, msg, update)
+
     elif query.data == '2.2':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text9,
+            text=Texts.text_2_2,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📊 Форматы работы", callback_data='2.2.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_2_2())
+        add_msg(context, msg, update)
+
     elif query.data == '2.2.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text10,
+            text=Texts.text_2_2_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Назад", callback_data='2.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_2_2_1())
+        add_msg(context, msg, update)
 
     if query.data == "3":
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Выберите интересующую помощь",
+            text=Texts.text_3,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔺 Подбор объекта с торгов", callback_data='3.1')],
-                [InlineKeyboardButton("🔻 Подбор объекта с открытого рынка", callback_data='3.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-            ])
+            reply_markup=Keyboards.keyboard_3()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
     elif query.data == '3.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text11,
+            text=Texts.text_3_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🧮 Тарифы", callback_data='2.2')],
-                [InlineKeyboardButton("♦ Отправить заявку", callback_data='3.1.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='3')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_3_1())
+        add_msg(context, msg, update)
+
     elif query.data == '3.1.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text12,
+            text=Texts.text_3_1_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Назад", callback_data='3.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_3_1_1())
+        add_msg(context, msg, update)
+
     elif query.data == '3.2':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text13,
+            text=Texts.text_3_2,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Назад", callback_data='3')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_3_2())
+        add_msg(context, msg, update)
 
     if query.data == "4":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text14,
+            text=Texts.text_4,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⛳ Земельные участки (Москва и МО)", callback_data='4.1')],
-                [InlineKeyboardButton("🏛 Коммерческая недвижимость (Москва и МО)",url='https://web.telegram.org/a/#-1002035303018')],
-                [InlineKeyboardButton("🏡 Жилая недвижимость (Москва и МО)", url='https://web.telegram.org/a/#-1002035303018')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-            ])
+            reply_markup=Keyboards.keyboard_4()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
+
     elif query.data == '4.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text15,
-            reply_markup=InlineKeyboardMarkup([
-
-                [InlineKeyboardButton("🔙 Назад", callback_data='3')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
-
-
+            text=Texts.text_4_1,
+            reply_markup=Keyboards.keyboard_4_1())
+        add_msg(context, msg, update)
 
     if query.data == "5":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text16,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⛳ Оформление земельного участка", callback_data='5.1')],
-                [InlineKeyboardButton("🔎 Осмотр объекта", callback_data='5.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-            ])
+            text=Texts.text_5,
+            reply_markup=Keyboards.keyboard_5()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
     elif query.data == '5.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text17,
+            text=Texts.text_5_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🧮 Прайс", callback_data='5.1.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='5')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_1())
+        add_msg(context, msg, update)
+
     elif query.data == '5.1.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text18,
+            text=Texts.text_5_1_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
+            reply_markup=Keyboards.keyboard_5_1_1())
+        add_msg(context, msg, update)
 
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
     elif query.data == '5.2':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text19,
+            text=Texts.text_5_2,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🗺 Самостоятельный осмотр", callback_data='5.2.1')],
-                [InlineKeyboardButton("📸 Услуга по осмотру объекта", callback_data='5.2.2')],
-                [InlineKeyboardButton("⛳ Оформление земельного участка", callback_data='5.2.3')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='5')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_2())
+        add_msg(context, msg, update)
     elif query.data == '5.2.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text20,
+            text=Texts.text_5_2_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔎 Нет кадастрового номера", callback_data='5.2.1.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_2_1())
+        add_msg(context, msg, update)
+
     elif query.data == '5.2.1.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text21,
+            text=Texts.text_5_2_1_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔰 Хочу всегда видеть полную информацию без ожидания.", callback_data='5.2.1.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_2_1_1())
+
+        add_msg(context, msg, update)
+
     elif query.data == '5.2.1.2':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text22,
+            text=Texts.text_5_2_1_2,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🎯 Оформить подписку", callback_data='5.2.1.3')],
-                [InlineKeyboardButton("🔙Назад", callback_data='5.2.1.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_2_1_2())
+        add_msg(context, msg, update)
+
     elif query.data == '5.2.1.3':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text23,
+            text=Texts.text_5_2_1_3,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
+            reply_markup=Keyboards.keyboard_5_2_1_3()
+            )
+        add_msg(context, msg, update)
 
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2.1.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
     elif query.data == '5.2.2':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text24,
+            text=Texts.text_5_2_2,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("♦ Заказать услугу", callback_data='5.2.2.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_2())
+        add_msg(context, msg, update)
     elif query.data == '5.2.2.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text25,
+            text=Texts.text_5_2_2_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
+            reply_markup=Keyboards.keyboard_5_2_2_1())
+        add_msg(context, msg, update)
 
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
     elif query.data == '5.2.3':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text26,
+            text=Texts.text_5_2_3,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🧮 Прайс", callback_data='5.2.3.1')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+            reply_markup=Keyboards.keyboard_5_2_3())
+
+        add_msg(context, msg, update)
     elif query.data == '5.2.3.1':
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text27,
+            text=Texts.text_5_2_3_1,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
+            reply_markup=Keyboards.keyboard_5_2_3_1())
 
-                [InlineKeyboardButton("🔙 Назад", callback_data='5.2.1')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ]  # Возвращаем основное меню
-            ))
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
 
     if query.data == "8":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text28,
+            text=Texts.text_8,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-            ])
+            reply_markup=Keyboards.keyboard_8()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
 
     if query.data == "9":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text29,
+            text=Texts.text_9,
             parse_mode='HTML',
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📬 Оставить заявку", callback_data='9.1')],
-                [InlineKeyboardButton("📞 Связь с менеджером", callback_data='9.2')],
-                [InlineKeyboardButton("🔙 Назад", callback_data='back')]
-            ])
+            reply_markup=Keyboards.keyboard_9()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
     elif query.data == "9.1":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text30,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("Помощь с выкупом", callback_data='2')],
-                [InlineKeyboardButton("Подбор объекта", callback_data='3')],
-                [InlineKeyboardButton("Осмотр объекта", callback_data='5.2')],
-                [InlineKeyboardButton("Оформление земельного участка", callback_data='5.2.3')],
-                [InlineKeyboardButton("Назад", callback_data='9')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ])
+            text=Texts.text_9_1,
+            reply_markup=Keyboards.keyboard_9_1()
+
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
     elif query.data == "9.2":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text31,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("Назад", callback_data='9')],
-                [InlineKeyboardButton("Главное меню", callback_data='back')]
-            ])
+            text=Texts.text_9_2,
+            reply_markup=Keyboards.keyboard_9_2()
         )
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
 
     if query.data == "back":
 
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=Texts.text32,
-            reply_markup=main_menu(), parse_mode='HTML'
-
+            text=Texts.text_back,
+            reply_markup=Keyboards.main_menu(), parse_mode='HTML'
         )
-
         # Сохраняем идентификатор отправленного сообщения в пользовательских данных
-        context.user_data['start_message_id'] = msg.message_id
-        context.user_data['start_message_text'] = msg.text
+        add_msg(context, msg, update)
 
 
 async def handle_user_messages(update: Update, context: CallbackContext) -> None:
