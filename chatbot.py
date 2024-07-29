@@ -400,7 +400,7 @@ async def handle_user_messages(update: Update, context: CallbackContext) -> None
 
 def main():
     """Start the bot."""
-    application = Application.builder().token("6838830099:AAGbGCibVjtsNMLJ4_K57htuS-R5AZa4Hf4").build()
+    application = Application.builder().token("6789966947:AAEfNbQmhCoPoDxP-1MuCaG8CH_Uz9u4lhY").build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(menu_option_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_messages))
