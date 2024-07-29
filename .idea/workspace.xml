@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ca6563e4-e3b7-4d9f-b183-a9b334fa6e9e" name="Changes" comment="v 1.0.2&#10;Refactoring&#10;add bot_structure.xmind">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chat_bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,9 +49,10 @@
     "Python.Bot1.executor": "Run",
     "Python.Bot2.executor": "Run",
     "Python.Chat_bot.executor": "Run",
+    "Python.chatbot.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/bisho/PycharmProjects/TelegramB",
+    "last_opened_file_path": "C:/Users/bisho/PycharmProjects/chatbot",
     "settings.editor.selected.configurable": "vcs.Subversion.SSH"
   }
 }]]></component>

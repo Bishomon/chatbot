@@ -10,13 +10,20 @@ import Keyboards
 import logging
 
 logging.basicConfig(level=logging.INFO)
-
-def add_message_to_dict(chat_id, message_id):
-    if chat_id not in msg_dict:
-        msg_dict[chat_id] = []
-    msg_dict[chat_id].append(message_id)
 msg_dict = {}
-def add_msg(context, msg, update)-> None:
+async def del_msg(effective_chat_id,context: CallbackContext)-> None:
+    if effective_chat_id in msg_dict:
+        for message_id in msg_dict[effective_chat_id]:
+            try:
+                # Проверка существования сообщения
+                await context.bot.delete_message(chat_id=effective_chat_id, message_id=message_id)
+                print(effective_chat_id,message_id)
+            except Exception as e:
+                logging.error(f"Error deleting message {message_id} in chat {effective_chat_id}: {e}")
+        # Очистка списка после удаления сообщений
+        msg_dict[effective_chat_id] = []
+
+async def add_msg(msg, update: Update) -> None:
    # context.user_data['start_message_id'] = msg.message_id
     #context.user_data['start_message_text'] = msg.text
     #context.user_data['message_ids'].append(msg.message_id)
@@ -25,32 +32,28 @@ def add_msg(context, msg, update)-> None:
    # context.bot.delete_message(message_id=msg.message_id, chat_id=update.effective_chat.id)
     if update.effective_chat.id not in msg_dict:
         msg_dict[update.effective_chat.id] = []
-    msg_dict[update.effective_chat.id].append(msg.id)
+    msg_dict[update.effective_chat.id].append(msg.message_id)
 
 
 
 async def start(update: Update, context: CallbackContext) -> None:
-    sent_message = await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=Texts.text_start,
-        reply_markup=Keyboards.main_menu(), parse_mode='HTML'
+    if not msg_dict:
+        msg = await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=Texts.text_start,
+            reply_markup=Keyboards.main_menu(), parse_mode='HTML'
 
-    )
+        )
+    else:
+        await del_msg(update.effective_chat.id,context)
     # Сохраняем идентификатор отправленного сообщения в пользовательских данных
-    context.user_data['start_message_id'] = sent_message.message_id
+    await add_msg(msg, update)
 
 async def menu_option_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
+    await query.answer()
 
-    if update.effective_chat.id in msg_dict:
-        for message_id in msg_dict[update.effective_chat.id]:
-            try:
-                # Проверка существования сообщения
-                await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=message_id)
-            except Exception as e:
-                logging.error(f"Error deleting message {message_id} in chat {update.effective_chat.id}: {e}")
-        # Очистка списка после удаления сообщений
-        msg_dict[update.effective_chat.id] = []
+    await del_msg(update.effective_chat.id,context)
 
     # Обрабатываем выбор пользователя в зависимости от кнопки
     if query.data == '1':
@@ -60,10 +63,10 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_1,
             reply_markup=Keyboards.keyboard_1()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '1.1':
-        text2 = Texts.text3
+
 
         # Здесь вы можете добавить код для обработки кнопки "Назад"
         msg = await context.bot.send_message(
@@ -72,7 +75,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_1_1()  # Возвращаем основное меню
             )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '1.2':
 
@@ -81,7 +84,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             text=Texts.text_1_2,
             reply_markup=Keyboards.keyboard_1_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
         # Обработка других кнопок
 
@@ -91,7 +94,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_2,
             reply_markup=Keyboards.keyboard_2()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '2.1':
 
         msg = await context.bot.send_message(
@@ -99,7 +102,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_2_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_2_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '2.1.1':
         msg = await context.bot.send_message(
@@ -110,7 +113,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
 
                 # Возвращаем основное меню
             )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '2.1.2':
 
         msg = await context.bot.send_message(
@@ -118,7 +121,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_2_1_2,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_2_1_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '2.1.3':
 
@@ -129,7 +132,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             reply_markup=Keyboards.keyboard_2_1_3()
                 # Возвращаем основное меню
             )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '2.2':
 
@@ -138,7 +141,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_2_2,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_2_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '2.2.1':
 
@@ -147,7 +150,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_2_2_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_2_2_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     if query.data == "3":
         msg = await context.bot.send_message(
@@ -156,7 +159,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_3()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '3.1':
 
         msg = await context.bot.send_message(
@@ -164,7 +167,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_3_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_3_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '3.1.1':
 
@@ -173,7 +176,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_3_1_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_3_1_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '3.2':
 
@@ -182,7 +185,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_3_2,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_3_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     if query.data == "4":
 
@@ -192,7 +195,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_4()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '4.1':
 
@@ -200,7 +203,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             chat_id=update.effective_chat.id,
             text=Texts.text_4_1,
             reply_markup=Keyboards.keyboard_4_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     if query.data == "5":
 
@@ -209,7 +212,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5,
             reply_markup=Keyboards.keyboard_5()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '5.1':
 
         msg = await context.bot.send_message(
@@ -217,7 +220,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.1.1':
 
@@ -226,7 +229,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_1_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_1_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.2':
 
@@ -235,7 +238,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_2,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '5.2.1':
 
         msg = await context.bot.send_message(
@@ -243,7 +246,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_2_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.2.1.1':
 
@@ -253,7 +256,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_1_1())
 
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.2.1.2':
 
@@ -262,7 +265,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_2_1_2,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_1_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.2.1.3':
 
@@ -272,7 +275,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_1_3()
             )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.2.2':
 
@@ -281,7 +284,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_2_2,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '5.2.2.1':
 
         msg = await context.bot.send_message(
@@ -289,7 +292,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_5_2_2_1,
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_2_1())
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     elif query.data == '5.2.3':
 
@@ -299,7 +302,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_3())
 
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == '5.2.3.1':
 
         msg = await context.bot.send_message(
@@ -308,7 +311,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_5_2_3_1())
 
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     if query.data == "8":
 
@@ -318,7 +321,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_8()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     if query.data == "9":
 
@@ -328,7 +331,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=Keyboards.keyboard_9()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == "9.1":
 
         msg = await context.bot.send_message(
@@ -337,7 +340,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             reply_markup=Keyboards.keyboard_9_1()
 
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
     elif query.data == "9.2":
 
         msg = await context.bot.send_message(
@@ -345,7 +348,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             text=Texts.text_9_2,
             reply_markup=Keyboards.keyboard_9_2()
         )
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
     if query.data == "back":
 
@@ -355,7 +358,7 @@ async def menu_option_handler(update: Update, context: CallbackContext) -> None:
             reply_markup=Keyboards.main_menu(), parse_mode='HTML'
         )
         # Сохраняем идентификатор отправленного сообщения в пользовательских данных
-        add_msg(context, msg, update)
+        await add_msg(msg, update)
 
 
 async def handle_user_messages(update: Update, context: CallbackContext) -> None:
