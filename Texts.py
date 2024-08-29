@@ -280,4 +280,4 @@ text_back = """<b>Добрый день!</b> Вы находитесь в чат
         <b>Какой у вас вопрос?</b>"""
 
 
-url1 = 'https://web.telegram.org/a/#-1002035303018'
+url1 = 'https://demo-estate.ru/'
