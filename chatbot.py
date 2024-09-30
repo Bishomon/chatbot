@@ -36,16 +36,14 @@ async def add_msg(msg, update: Update) -> None:
 
 
 async def start(update: Update, context: CallbackContext) -> None:
-    if not msg_dict:
-        msg = await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=Texts.text_start,
-            reply_markup=Keyboards.main_menu(), parse_mode='HTML'
+    await del_msg(update.effective_chat.id,context)
+    msg = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=Texts.text_start,
+        reply_markup=Keyboards.main_menu(), parse_mode='HTML'
+    )
+    await add_msg(msg, update)
 
-        )
-        await add_msg(msg, update)
-    else:
-        await del_msg(update.effective_chat.id,context)
     # Сохраняем идентификатор отправленного сообщения в пользовательских данных
 
 
